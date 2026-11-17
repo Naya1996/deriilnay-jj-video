@@ -202,16 +202,24 @@ function showMedia(){
  }else{
   const img=document.createElement('img');
 
-  img.onload=()=>{
-   preview.prepend(img);
+  const reader=new FileReader();
+
+  reader.onload=e=>{
+   img.src=e.target.result;
+   img.onload=()=>{
+    preview.prepend(img);
+   };
+   img.onerror=()=>{
+    alert('Format foto tidak dapat ditampilkan');
+   };
   };
 
-  img.onerror=()=>{
-   alert('Foto gagal dibaca: '+file.name);
+  reader.onerror=()=>{
+   alert('Gagal membaca file dari Galeri');
   };
 
-  img.src=url;
- }
+  reader.readAsDataURL(file);
+}
 }
 
 music.onchange=()=>{
