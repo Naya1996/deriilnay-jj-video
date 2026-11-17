@@ -220,8 +220,15 @@ async function setupAudio(){
   analyser.fftSize=256;
 
   source=audioContext.createMediaElementSource(audio);
-  source.connect(analyser);
-  analyser.connect(audioContext.destination);
+
+source.connect(analyser);
+
+analyser.connect(audioContext.destination);
+
+recordDestination =
+audioContext.createMediaStreamDestination();
+
+analyser.connect(recordDestination);
 
   frequencyData=new Uint8Array(analyser.frequencyBinCount);
  }
