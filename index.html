@@ -268,6 +268,55 @@ function drawVisualizer(){
  }
 }
 
+function drawRenderFrame(){
+
+ const w=renderCanvas.width;
+ const h=renderCanvas.height;
+
+ renderCtx.fillStyle='#050510';
+ renderCtx.fillRect(0,0,w,h);
+
+ const mediaElement=preview.querySelector('img,video');
+
+ if(mediaElement){
+
+  const iw=mediaElement.videoWidth || mediaElement.naturalWidth;
+  const ih=mediaElement.videoHeight || mediaElement.naturalHeight;
+
+  if(iw && ih){
+
+   const scale=Math.min(w/iw,h/ih);
+   const zoom=Number(
+    preview.style.transform.match(/scale\(([\d.]+)\)/)?.[1] || 1
+   );
+
+   const dw=iw*scale*zoom;
+   const dh=ih*scale*zoom;
+
+   renderCtx.save();
+   renderCtx.translate(w/2,h/2);
+   renderCtx.drawImage(
+    mediaElement,
+    -dw/2,
+    -dh/2,
+    dw,
+    dh
+   );
+   renderCtx.restore();
+  }
+ }
+
+ const flashOpacity=parseFloat(flash.style.opacity)||0;
+
+ if(flashOpacity>0){
+  renderCtx.fillStyle=
+   'rgba(255,255,255,'+flashOpacity+')';
+  renderCtx.fillRect(0,0,w,h);
+ }
+
+ renderAnimation=requestAnimationFrame(drawRenderFrame);
+}
+
 function detectBeat(){
  if(!analyser)return false;
 
