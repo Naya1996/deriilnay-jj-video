@@ -1,0 +1,239 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#080817">
+<title>DERiiLNAY JJ VIDEO MAKER</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;
+ background:#080817;
+ color:white;
+ font-family:Arial,sans-serif;
+ padding:18px;
+}
+header{text-align:center;padding:20px 0}
+.logo{
+ font-size:27px;
+ font-weight:900;
+ letter-spacing:2px;
+ background:linear-gradient(90deg,#a855f7,#22d3ee);
+ color:transparent;
+ background-clip:text;
+}
+.sub{color:#aaa;font-size:11px;letter-spacing:4px}
+.card{
+ background:#141426;
+ border:1px solid #30304b;
+ border-radius:18px;
+ padding:16px;
+ margin-bottom:15px;
+}
+h3{font-size:14px;color:#c4a5ff}
+button,.upload{
+ display:block;
+ width:100%;
+ padding:14px;
+ border:0;
+ border-radius:12px;
+ background:linear-gradient(90deg,#9333ea,#2563eb);
+ color:white;
+ font-weight:bold;
+ text-align:center;
+ margin-top:10px;
+}
+input[type=file]{width:100%;color:#bbb}
+.preview{
+ width:100%;
+ aspect-ratio:9/16;
+ max-height:480px;
+ background:#05050b;
+ border-radius:14px;
+ display:flex;
+ justify-content:center;
+ align-items:center;
+ overflow:hidden;
+ position:relative;
+}
+.preview video,.preview img{
+ width:100%;
+ height:100%;
+ object-fit:contain;
+}
+#beatFlash{
+ position:absolute;
+ inset:0;
+ background:white;
+ opacity:0;
+ pointer-events:none;
+}
+canvas{
+ width:100%;
+ height:75px;
+ background:#080817;
+ border-radius:10px;
+}
+.status{color:#aaa;font-size:12px}
+input[type=range]{width:100%}
+</style>
+</head>
+
+<body>
+
+<header>
+ <div class="logo">DERiiLNAY</div>
+ <div class="sub">JJ VIDEO MAKER</div>
+</header>
+
+<div class="card">
+ <h3>01 / MEDIA STUDIO</h3>
+ <label class="upload">
+  + PILIH FOTO & VIDEO
+  <input id="media" type="file"
+  accept="image/*,video/*" multiple hidden>
+ </label>
+ <p class="status" id="mediaInfo">Belum ada media</p>
+</div>
+
+<div class="card">
+ <h3>02 / MUSIC STUDIO</h3>
+ <input id="music" type="file" accept="audio/*">
+ <p class="status" id="musicInfo">Belum ada musik</p>
+ <canvas id="visualizer"></canvas>
+</div>
+
+<div class="card">
+ <h3>03 / LIVE PREVIEW</h3>
+ <div class="preview" id="preview">
+  <span id="placeholder">YOUR JJ VIDEO PREVIEW</span>
+  <div id="beatFlash"></div>
+ </div>
+ <button id="play">▶ PLAY JJ PREVIEW</button>
+ <button id="stop">■ STOP</button>
+</div>
+
+<div class="card">
+ <h3>04 / JJ EFFECTS</h3>
+ <label>Beat Sensitivity</label>
+ <input id="sensitivity" type="range"
+ min="1" max="10" value="5">
+ <label>Zoom Intensity</label>
+ <input id="zoom" type="range"
+ min="1" max="20" value="8">
+ <label>Flash Intensity</label>
+ <input id="flash" type="range"
+ min="1" max="10" value="6">
+</div>
+
+<div class="card">
+ <h3>05 / EXPORT SETTINGS</h3>
+ <p class="status">Format: MP4 (tahap konversi berikutnya)</p>
+ <p class="status">Resolution: 720 × 1280</p>
+ <p class="status">Duration: 30 seconds</p>
+ <button id="export">EXPORT VIDEO (COMING SOON)</button>
+ <p class="status" id="exportInfo">
+  Editor siap menerima media.
+ </p>
+</div>
+
+<script>
+const media=document.getElementById('media');
+const music=document.getElementById('music');
+const preview=document.getElementById('preview');
+const placeholder=document.getElementById('placeholder');
+const flash=document.getElementById('beatFlash');
+
+let files=[];
+let current=0;
+let timer=null;
+let playing=false;
+let audio=null;
+
+media.onchange=()=>{
+ files=Array.from(media.files);
+ document.getElementById('mediaInfo').textContent=
+ files.length+' media dipilih';
+ showMedia();
+};
+
+function showMedia(){
+ preview.querySelectorAll('img,video').forEach(e=>e.remove());
+ placeholder.style.display='none';
+ if(!files.length)return;
+
+ const file=files[current%files.length];
+ const url=URL.createObjectURL(file);
+
+ if(file.type.startsWith('video/')){
+  const v=document.createElement('video');
+  v.src=url;
+  v.muted=true;
+  v.playsInline=true;
+  preview.prepend(v);
+ }else{
+  const img=document.createElement('img');
+  img.src=url;
+  preview.prepend(img);
+ }
+}
+
+music.onchange=()=>{
+ if(music.files.length){
+  if(audio)audio.pause();
+  audio=new Audio(URL.createObjectURL(music.files[0]));
+  audio.loop=true;
+  document.getElementById('musicInfo').textContent=
+  music.files[0].name;
+ }
+};
+
+function stop(){
+ playing=false;
+ clearInterval(timer);
+ if(audio)audio.pause();
+ preview.style.transform='scale(1)';
+ flash.style.opacity=0;
+}
+
+document.getElementById('play').onclick=()=>{
+ if(!files.length){
+  alert('Pilih foto atau video dahulu!');
+  return;
+ }
+ if(playing)stop();
+ playing=true;
+ if(audio){
+  audio.currentTime=0;
+  audio.play().catch(()=>{});
+ }
+
+ let beat=0;
+ timer=setInterval(()=>{
+  if(!playing)return;
+  beat++;
+  current=(current+1)%files.length;
+  showMedia();
+
+  const z=document.getElementById('zoom').value;
+  const f=document.getElementById('flash').value;
+  preview.style.transform=
+  'scale('+(1+z/100*(beat%2))+')';
+  flash.style.opacity=f/10;
+  setTimeout(()=>flash.style.opacity=0,90);
+ },650);
+};
+
+document.getElementById('stop').onclick=stop;
+
+document.getElementById('export').onclick=()=>{
+ document.getElementById('exportInfo').textContent=
+ 'Ekspor MP4 akan ditambahkan pada tahap berikutnya.';
+};
+
+</script>
+</body>
+</html>
