@@ -163,7 +163,13 @@ let startTime=0;
 let lastBeat=0;
 let lastSwitch=0;
 let zoomValue=8;
+let renderCanvas=document.createElement('canvas');
+renderCanvas.width=720;
+renderCanvas.height=1280;
 
+let renderCtx=renderCanvas.getContext('2d');
+let renderStream=null;
+let renderAnimation=null;
 media.onchange=()=>{
  files=Array.from(media.files);
  document.getElementById('mediaInfo').textContent=
