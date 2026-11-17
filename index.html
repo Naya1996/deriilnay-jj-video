@@ -440,7 +440,9 @@ document.getElementById('zoom').oninput=e=>{
 };
 
 
+ 
 document.getElementById('export').onclick=async()=>{
+
  const info=document.getElementById('exportInfo');
 
  if(!files.length || !audio){
@@ -448,29 +450,26 @@ document.getElementById('export').onclick=async()=>{
   return;
  }
 
- if(!window.MediaRecorder){
-  info.textContent='Browser tidak mendukung perekaman.';
-  return;
- }
-
- info.textContent='Menyiapkan perekaman...';
-
  try{
+
   await setupAudio();
 
-  const stream=preview.captureStream(30);
+  if(renderAnimation){
+   cancelAnimationFrame(renderAnimation);
+  }
+
+  drawRenderFrame();
+
+  renderStream=renderCanvas.captureStream(30);
+
   const tracks=[
-   ...stream.getVideoTracks(),
+   ...renderStream.getVideoTracks(),
    ...recordDestination.stream.getAudioTracks()
   ];
 
   const combined=new MediaStream(tracks);
 
-  let mime='video/webm;codecs=vp9,opus';
-
-  if(!MediaRecorder.isTypeSupported(mime)){
-   mime='video/webm;codecs=vp8,opus';
-  }
+  let mime='video/webm;codecs=vp8,opus';
 
   if(!MediaRecorder.isTypeSupported(mime)){
    mime='video/webm';
@@ -487,15 +486,16 @@ document.getElementById('export').onclick=async()=>{
   };
 
   recorder.onstop=()=>{
-   const blob=new Blob(chunks,{type:'video/webm'});
+   const blob=new Blob(chunks,{type:mime});
    const url=URL.createObjectURL(blob);
 
-   const a=document.createElement('a');
-   a.href=url;
-   a.download='DERiiLNAY-JJ.webm';
-   a.click();
+   const link=document.createElement('a');
+   link.href=url;
+   link.download='DERiiLNAY-JJ.webm';
+   link.click();
 
-   info.textContent='Video WebM berhasil disimpan!';
+   info.textContent='Video berhasil direkam!';
+
    tracks.forEach(t=>t.stop());
   };
 
@@ -503,17 +503,22 @@ document.getElementById('export').onclick=async()=>{
 
   await play();
 
-  info.textContent='Sedang merekam video 30 detik...';
+  info.textContent='Merekam video JJ 30 detik...';
 
   setTimeout(()=>{
    stop();
-   recorder.stop();
+   if(recorder.state==='recording'){
+    recorder.stop();
+   }
+   cancelAnimationFrame(renderAnimation);
   },30000);
 
  }catch(error){
-  info.textContent='Gagal: '+error.message;
+  info.textContent='Error: '+error.message;
  }
+
 };
+
 
 
 </script>
