@@ -140,30 +140,43 @@ input[type=range]{width:100%}
  </p>
 </div>
 
-<script>
+
 const media=document.getElementById('media');
 const music=document.getElementById('music');
 const preview=document.getElementById('preview');
 const placeholder=document.getElementById('placeholder');
 const flash=document.getElementById('beatFlash');
+const canvas=document.getElementById('visualizer');
+const ctx=canvas.getContext('2d');
 
 let files=[];
 let current=0;
-let timer=null;
-let playing=false;
 let audio=null;
+let audioContext=null;
+let analyser=null;
+let source=null;
+let frequencyData=null;
+let playing=false;
+let animation=null;
+let startTime=0;
+let lastBeat=0;
+let lastSwitch=0;
+let zoomValue=8;
 
 media.onchange=()=>{
  files=Array.from(media.files);
  document.getElementById('mediaInfo').textContent=
  files.length+' media dipilih';
+ current=0;
  showMedia();
 };
 
 function showMedia(){
  preview.querySelectorAll('img,video').forEach(e=>e.remove());
- placeholder.style.display='none';
+
  if(!files.length)return;
+
+ placeholder.style.display='none';
 
  const file=files[current%files.length];
  const url=URL.createObjectURL(file);
@@ -172,8 +185,10 @@ function showMedia(){
   const v=document.createElement('video');
   v.src=url;
   v.muted=true;
+  v.loop=true;
   v.playsInline=true;
   preview.prepend(v);
+  if(playing)v.play().catch(()=>{});
  }else{
   const img=document.createElement('img');
   img.src=url;
@@ -182,58 +197,190 @@ function showMedia(){
 }
 
 music.onchange=()=>{
- if(music.files.length){
-  if(audio)audio.pause();
-  audio=new Audio(URL.createObjectURL(music.files[0]));
-  audio.loop=true;
-  document.getElementById('musicInfo').textContent=
-  music.files[0].name;
+ if(!music.files.length)return;
+
+ if(audio){
+  audio.pause();
+  audio.src='';
  }
+
+ audio=new Audio(URL.createObjectURL(music.files[0]));
+
+ document.getElementById('musicInfo').textContent=
+ music.files[0].name;
 };
 
-function stop(){
- playing=false;
- clearInterval(timer);
- if(audio)audio.pause();
- preview.style.transform='scale(1)';
- flash.style.opacity=0;
+async function setupAudio(){
+ if(!audio)return false;
+
+ if(!audioContext){
+  audioContext=new AudioContext();
+  analyser=audioContext.createAnalyser();
+  analyser.fftSize=256;
+
+  source=audioContext.createMediaElementSource(audio);
+  source.connect(analyser);
+  analyser.connect(audioContext.destination);
+
+  frequencyData=new Uint8Array(analyser.frequencyBinCount);
+ }
+
+ await audioContext.resume();
+ return true;
 }
 
-document.getElementById('play').onclick=()=>{
+function drawVisualizer(){
+ if(!analyser)return;
+
+ analyser.getByteFrequencyData(frequencyData);
+
+ canvas.width=canvas.clientWidth*2;
+ canvas.height=canvas.clientHeight*2;
+
+ const w=canvas.width/frequencyData.length;
+
+ for(let i=0;i<frequencyData.length;i++){
+  const h=frequencyData[i]/255*canvas.height;
+
+  const gradient=ctx.createLinearGradient(
+   0,canvas.height,0,0
+  );
+
+  gradient.addColorStop(0,'#2563eb');
+  gradient.addColorStop(1,'#d946ef');
+
+  ctx.fillStyle=gradient;
+  ctx.fillRect(i*w,canvas.height-h,w*0.65,h);
+ }
+}
+
+function detectBeat(){
+ if(!analyser)return false;
+
+ analyser.getByteFrequencyData(frequencyData);
+
+ let bass=0;
+ const count=12;
+
+ for(let i=0;i<count;i++){
+  bass+=frequencyData[i];
+ }
+
+ bass/=count;
+
+ const sensitivity=
+ Number(document.getElementById('sensitivity').value);
+
+ const threshold=155-sensitivity*9;
+
+ const now=performance.now();
+
+ if(bass>threshold && now-lastBeat>220){
+  lastBeat=now;
+  return true;
+ }
+
+ return false;
+}
+
+function animate(){
+ if(!playing)return;
+
+ const elapsed=(performance.now()-startTime)/1000;
+
+ if(elapsed>=30){
+  stop();
+  document.getElementById('exportInfo').textContent=
+  'Preview 30 detik selesai.';
+  return;
+ }
+
+ drawVisualizer();
+
+ const beat=detectBeat();
+
+ if(beat){
+  const intensity=
+  Number(document.getElementById('flash').value)/10;
+
+  flash.style.opacity=intensity;
+
+  preview.style.transform=
+  'scale('+(1+zoomValue/100)+')';
+
+  setTimeout(()=>{
+   flash.style.opacity=0;
+   preview.style.transform='scale(1)';
+  },110);
+ }
+
+ if(performance.now()-lastSwitch>3500){
+  if(files.length){
+   current=(current+1)%files.length;
+   showMedia();
+  }
+  lastSwitch=performance.now();
+ }
+
+ animation=requestAnimationFrame(animate);
+}
+
+async function play(){
  if(!files.length){
   alert('Pilih foto atau video dahulu!');
   return;
  }
- if(playing)stop();
- playing=true;
- if(audio){
-  audio.currentTime=0;
-  audio.play().catch(()=>{});
+
+ if(!music){
+  alert('Pilih musik dahulu!');
+  return;
  }
 
- let beat=0;
- timer=setInterval(()=>{
-  if(!playing)return;
-  beat++;
-  current=(current+1)%files.length;
-  showMedia();
+ if(!audio){
+  alert('Pilih file musik MP3 dahulu!');
+  return;
+ }
 
-  const z=document.getElementById('zoom').value;
-  const f=document.getElementById('flash').value;
-  preview.style.transform=
-  'scale('+(1+z/100*(beat%2))+')';
-  flash.style.opacity=f/10;
-  setTimeout(()=>flash.style.opacity=0,90);
- },650);
-};
+ stop();
 
+ await setupAudio();
+
+ playing=true;
+ startTime=performance.now();
+ lastBeat=0;
+ lastSwitch=performance.now();
+
+ audio.currentTime=0;
+ await audio.play();
+
+ animate();
+}
+
+function stop(){
+ playing=false;
+
+ if(animation)cancelAnimationFrame(animation);
+
+ if(audio)audio.pause();
+
+ flash.style.opacity=0;
+ preview.style.transform='scale(1)';
+
+ preview.querySelectorAll('video').forEach(v=>v.pause());
+}
+
+document.getElementById('play').onclick=play;
 document.getElementById('stop').onclick=stop;
+
+document.getElementById('zoom').oninput=e=>{
+ zoomValue=Number(e.target.value);
+};
 
 document.getElementById('export').onclick=()=>{
  document.getElementById('exportInfo').textContent=
- 'Ekspor MP4 akan ditambahkan pada tahap berikutnya.';
+ 'Tahap berikutnya: ekspor MP4 menggunakan FFmpeg.';
 };
 
-</script>
+
 </body>
 </html>
