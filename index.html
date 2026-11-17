@@ -384,10 +384,82 @@ document.getElementById('zoom').oninput=e=>{
  zoomValue=Number(e.target.value);
 };
 
-document.getElementById('export').onclick=()=>{
- document.getElementById('exportInfo').textContent=
- 'Tahap berikutnya: ekspor MP4 menggunakan FFmpeg.';
+
+document.getElementById('export').onclick=async()=>{
+ const info=document.getElementById('exportInfo');
+
+ if(!files.length || !audio){
+  alert('Pilih foto/video dan musik dahulu!');
+  return;
+ }
+
+ if(!window.MediaRecorder){
+  info.textContent='Browser tidak mendukung perekaman.';
+  return;
+ }
+
+ info.textContent='Menyiapkan perekaman...';
+
+ try{
+  await setupAudio();
+
+  const stream=preview.captureStream(30);
+  const tracks=[
+   ...stream.getVideoTracks(),
+   ...recordDestination.stream.getAudioTracks()
+  ];
+
+  const combined=new MediaStream(tracks);
+
+  let mime='video/webm;codecs=vp9,opus';
+
+  if(!MediaRecorder.isTypeSupported(mime)){
+   mime='video/webm;codecs=vp8,opus';
+  }
+
+  if(!MediaRecorder.isTypeSupported(mime)){
+   mime='video/webm';
+  }
+
+  const recorder=new MediaRecorder(combined,{
+   mimeType:mime
+  });
+
+  const chunks=[];
+
+  recorder.ondataavailable=e=>{
+   if(e.data.size>0)chunks.push(e.data);
+  };
+
+  recorder.onstop=()=>{
+   const blob=new Blob(chunks,{type:'video/webm'});
+   const url=URL.createObjectURL(blob);
+
+   const a=document.createElement('a');
+   a.href=url;
+   a.download='DERiiLNAY-JJ.webm';
+   a.click();
+
+   info.textContent='Video WebM berhasil disimpan!';
+   tracks.forEach(t=>t.stop());
+  };
+
+  recorder.start();
+
+  await play();
+
+  info.textContent='Sedang merekam video 30 detik...';
+
+  setTimeout(()=>{
+   stop();
+   recorder.stop();
+  },30000);
+
+ }catch(error){
+  info.textContent='Gagal: '+error.message;
+ }
 };
+
 
 </script>
 </body>
