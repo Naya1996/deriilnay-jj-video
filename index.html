@@ -194,12 +194,23 @@ function showMedia(){
   v.muted=true;
   v.loop=true;
   v.playsInline=true;
+  v.onloadeddata=()=>{
+   if(playing)v.play().catch(()=>{});
+  };
+  v.onerror=()=>alert('Video gagal dibaca');
   preview.prepend(v);
-  if(playing)v.play().catch(()=>{});
  }else{
   const img=document.createElement('img');
+
+  img.onload=()=>{
+   preview.prepend(img);
+  };
+
+  img.onerror=()=>{
+   alert('Foto gagal dibaca: '+file.name);
+  };
+
   img.src=url;
-  preview.prepend(img);
  }
 }
 
