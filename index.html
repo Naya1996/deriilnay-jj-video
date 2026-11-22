@@ -254,17 +254,36 @@ function showMedia(){
  preview.insertBefore(el,flash);
 }
 
+
 function drawTimeline(){
- $('timeline').innerHTML='';
+ const timeline=$('timeline');
+
+ // Bersihkan thumbnail lama
+ timeline.innerHTML='';
 
  files.forEach((file,index)=>{
   const item=document.createElement('div');
-  item.className='thumb'+(index===current?' active':'');
+
+  item.className='thumb'+
+   (index===current?' active':'');
 
   if(file.type.startsWith('image/')){
    const img=document.createElement('img');
-   img.src=URL.createObjectURL(file);
+
+   const url=URL.createObjectURL(file);
+
+   img.onload=()=>{
+    URL.revokeObjectURL(url);
+   };
+
+   img.onerror=()=>{
+    URL.revokeObjectURL(url);
+    item.textContent='FOTO ERROR';
+   };
+
+   img.src=url;
    item.appendChild(img);
+
   }else{
    item.textContent='VIDEO '+(index+1);
   }
@@ -275,9 +294,10 @@ function drawTimeline(){
    drawTimeline();
   };
 
-  $('timeline').appendChild(item);
+  timeline.appendChild(item);
  });
 }
+
 
 $('music').onchange=()=>{
  if(!music.files.length)return;
