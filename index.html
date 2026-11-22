@@ -649,16 +649,21 @@ function drawRenderFrame(){
    const dw=iw*scale*zoom;
    const dh=ih*scale*zoom;
 
-   renderCtx.save();
-   renderCtx.globalAlpha=opacity;
-   renderCtx.drawImage(
-    el,
-    (w-dw)/2+shakeX,
-    (h-dh)/2,
-    dw,
-    dh
-   );
-   renderCtx.restore();
+
+renderCtx.save();
+renderCtx.globalAlpha=opacity;
+renderCtx.filter=getColorFilter();
+
+renderCtx.drawImage(
+ el,
+ (w-dw)/2+shakeX,
+ (h-dh)/2,
+ dw,
+ dh
+);
+
+renderCtx.restore();
+  
   }
  }
 
