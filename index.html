@@ -214,9 +214,19 @@ media.onchange=()=>{
  drawTimeline();
 };
 
+
+
 function showMedia(){
- preview.querySelectorAll('img,video').forEach(el=>{
-  if(el.tagName==='VIDEO')el.pause();
+
+ const oldElements =
+ preview.querySelectorAll('img,video');
+
+ oldElements.forEach(el=>{
+  if(el.tagName==='VIDEO'){
+   el.pause();
+   el.removeAttribute('src');
+   el.load();
+  }
   el.remove();
  });
 
@@ -230,30 +240,61 @@ function showMedia(){
   return;
  }
 
+ const file=files[current];
+
  $('placeholder').style.display='none';
 
- const file=files[current];
- mediaURL=URL.createObjectURL(file);
+ if(file.type.startsWith('image/')){
 
- let el;
+  const img=document.createElement('img');
 
- if(file.type.startsWith('video/')){
-  el=document.createElement('video');
-  el.src=mediaURL;
-  el.muted=true;
-  el.loop=true;
-  el.playsInline=true;
-  el.onloadeddata=()=>{
-   if(playing)el.play().catch(()=>{});
+  img.onload=()=>{
+   preview.insertBefore(img,flash);
   };
- }else{
-  el=document.createElement('img');
-  el.src=mediaURL;
+
+  img.onerror=()=>{
+   $('placeholder').textContent=
+    'GAGAL MEMUAT FOTO';
+   $('placeholder').style.display='block';
+  };
+
+  const reader=new FileReader();
+
+  reader.onload=e=>{
+   img.src=e.target.result;
+  };
+
+  reader.onerror=()=>{
+   $('placeholder').textContent=
+    'FILE FOTO TIDAK DAPAT DIBACA';
+   $('placeholder').style.display='block';
+  };
+
+  reader.readAsDataURL(file);
+
+ }else if(file.type.startsWith('video/')){
+
+  mediaURL=URL.createObjectURL(file);
+
+  const video=document.createElement('video');
+
+  video.src=mediaURL;
+  video.muted=true;
+  video.loop=true;
+  video.playsInline=true;
+
+  video.onloadeddata=()=>{
+   preview.insertBefore(video,flash);
+   if(playing)video.play().catch(()=>{});
+  };
+
+  video.onerror=()=>{
+   $('placeholder').textContent=
+    'GAGAL MEMUAT VIDEO';
+   $('placeholder').style.display='block';
+  };
  }
-
- preview.insertBefore(el,flash);
 }
-
 
 function drawTimeline(){
  const timeline=$('timeline');
