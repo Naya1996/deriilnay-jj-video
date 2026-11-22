@@ -3,82 +3,91 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
 <meta name="theme-color" content="#080817">
-<title>DERiiLNAY JJ VIDEO MAKER</title>
+<title>DERiiLNAY JJ VIDEO MAKER PRO</title>
 
 <style>
 *{box-sizing:border-box}
 body{
- margin:0;
- background:#080817;
- color:white;
+ margin:0;padding:15px;
+ background:#080817;color:white;
  font-family:Arial,sans-serif;
- padding:18px;
 }
-header{text-align:center;padding:20px 0}
+header{text-align:center;padding:22px 0}
 .logo{
- font-size:27px;
- font-weight:900;
- letter-spacing:2px;
- background:linear-gradient(90deg,#a855f7,#22d3ee);
- color:transparent;
- background-clip:text;
+ font-size:29px;font-weight:900;
+ letter-spacing:3px;
+ background:linear-gradient(90deg,#c084fc,#22d3ee);
+ color:transparent;background-clip:text;
 }
-.sub{color:#aaa;font-size:11px;letter-spacing:4px}
+.sub{font-size:10px;color:#aaa;letter-spacing:5px}
 .card{
  background:#141426;
  border:1px solid #30304b;
- border-radius:18px;
- padding:16px;
- margin-bottom:15px;
+ border-radius:17px;
+ padding:15px;margin-bottom:15px;
 }
-h3{font-size:14px;color:#c4a5ff}
+h3{font-size:13px;color:#c4a5ff}
 button,.upload{
- display:block;
- width:100%;
- padding:14px;
- border:0;
- border-radius:12px;
+ width:100%;display:block;
+ padding:13px;margin-top:9px;
+ border:0;border-radius:10px;
  background:linear-gradient(90deg,#9333ea,#2563eb);
- color:white;
- font-weight:bold;
+ color:white;font-weight:bold;
  text-align:center;
- margin-top:10px;
 }
-input[type=file]{width:100%;color:#bbb}
+button:active{opacity:.7}
+input,select{max-width:100%;color:white}
+input[type=file]{width:100%}
+input[type=range]{width:100%;accent-color:#a855f7}
+input[type=text],select{
+ width:100%;padding:11px;
+ background:#080817;border:1px solid #444;
+ border-radius:8px;
+}
+.status{font-size:11px;color:#aaa}
 .preview{
- width:100%;
- aspect-ratio:9/16;
- max-height:480px;
- background:#05050b;
- border-radius:14px;
- display:flex;
- justify-content:center;
- align-items:center;
- overflow:hidden;
- position:relative;
+ width:100%;aspect-ratio:9/16;
+ max-height:480px;background:#05050b;
+ border-radius:13px;overflow:hidden;
+ position:relative;display:flex;
+ justify-content:center;align-items:center;
 }
-.preview video,.preview img{
- width:100%;
- height:100%;
- object-fit:contain;
+.preview img,.preview video{
+ width:100%;height:100%;object-fit:contain;
+ position:absolute;inset:0;
 }
 #beatFlash{
- position:absolute;
- inset:0;
- background:white;
- opacity:0;
+ position:absolute;inset:0;
+ background:white;opacity:0;
  pointer-events:none;
+ z-index:3;
 }
-canvas{
- width:100%;
- height:75px;
- background:#080817;
- border-radius:10px;
+#caption{
+ position:absolute;bottom:12%;
+ width:100%;text-align:center;
+ font-size:25px;font-weight:900;
+ text-shadow:2px 2px 5px black;
+ z-index:4;overflow-wrap:anywhere;
 }
-.status{color:#aaa;font-size:12px}
-input[type=range]{width:100%}
+#visualizer{
+ width:100%;height:75px;
+ background:#080817;border-radius:8px;
+}
+.timeline{
+ display:flex;gap:7px;overflow-x:auto;
+ padding:8px 0;
+}
+.thumb{
+ min-width:65px;height:75px;
+ border:2px solid #444;border-radius:7px;
+ display:flex;align-items:center;
+ justify-content:center;
+ font-size:11px;overflow:hidden;
+}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.active{border-color:#c084fc}
 </style>
 </head>
 
@@ -86,68 +95,84 @@ input[type=range]{width:100%}
 
 <header>
  <div class="logo">DERiiLNAY</div>
- <div class="sub">JJ VIDEO MAKER</div>
+ <div class="sub">JJ VIDEO MAKER PRO</div>
+ <p class="status">MOBILE CREATIVE STUDIO</p>
 </header>
 
 <div class="card">
- <h3>01 / MEDIA STUDIO</h3>
- <label class="upload">
-  + PILIH FOTO & VIDEO
-  <input id="media" type="file"
-  accept="image/*,video/*" multiple hidden>
- </label>
- <p class="status" id="mediaInfo">Belum ada media</p>
+<h3>01 / MEDIA STUDIO</h3>
+<label class="upload">
+ + IMPORT FOTO & VIDEO
+ <input id="media" type="file"
+ accept="image/*,video/*" multiple hidden>
+</label>
+<p id="mediaInfo" class="status">Belum ada media</p>
+<div id="timeline" class="timeline"></div>
 </div>
 
 <div class="card">
- <h3>02 / MUSIC STUDIO</h3>
- <input id="music" type="file" accept="audio/*">
- <p class="status" id="musicInfo">Belum ada musik</p>
- <canvas id="visualizer"></canvas>
+<h3>02 / MUSIC STUDIO</h3>
+<input id="music" type="file" accept="audio/*">
+<p id="musicInfo" class="status">Belum ada musik</p>
+<label>Volume Musik</label>
+<input id="volume" type="range" min="0" max="100" value="100">
+<canvas id="visualizer"></canvas>
 </div>
 
 <div class="card">
- <h3>03 / LIVE PREVIEW</h3>
- <div class="preview" id="preview">
-  <span id="placeholder">YOUR JJ VIDEO PREVIEW</span>
-  <div id="beatFlash"></div>
- </div>
- <button id="play">▶ PLAY JJ PREVIEW</button>
- <button id="stop">■ STOP</button>
+<h3>03 / LIVE PREVIEW</h3>
+<div class="preview" id="preview">
+ <span id="placeholder">YOUR JJ VIDEO</span>
+ <div id="beatFlash"></div>
+ <div id="caption"></div>
+</div>
+<button id="play">▶ PLAY PREVIEW</button>
+<button id="stop">■ STOP</button>
+<p id="playInfo" class="status">Siap digunakan</p>
 </div>
 
 <div class="card">
- <h3>04 / JJ EFFECTS</h3>
- <label>Beat Sensitivity</label>
- <input id="sensitivity" type="range"
- min="1" max="10" value="5">
- <label>Zoom Intensity</label>
- <input id="zoom" type="range"
- min="1" max="20" value="8">
- <label>Flash Intensity</label>
- <input id="flash" type="range"
- min="1" max="10" value="6">
+<h3>04 / BEAT DETECTOR</h3>
+<label>Beat Sensitivity</label>
+<input id="sensitivity" type="range" min="1" max="10" value="5">
+<label>Beat Zoom</label>
+<input id="zoom" type="range" min="1" max="25" value="8">
+<label>Flash Intensity</label>
+<input id="flash" type="range" min="1" max="10" value="6">
 </div>
 
 <div class="card">
- <h3>05 / EXPORT SETTINGS</h3>
- <p class="status">Format: MP4 (tahap konversi berikutnya)</p>
- <p class="status">Resolution: 720 × 1280</p>
- <p class="status">Duration: 30 seconds</p>
- <button id="export">EXPORT VIDEO (COMING SOON)</button>
- <p class="status" id="exportInfo">
-  Editor siap menerima media.
- </p>
+<h3>05 / TRANSITION EFFECTS</h3>
+<select id="effect">
+ <option value="normal">Normal</option>
+ <option value="zoom">Beat Zoom</option>
+ <option value="fade">Fade</option>
+ <option value="shake">Shake</option>
+ <option value="flash">Beat Flash</option>
+</select>
+<label>Kecepatan pergantian media</label>
+<input id="speed" type="range" min="1" max="10" value="4">
 </div>
-<script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js"></script>
+
+<div class="card">
+<h3>06 / TEXT STUDIO</h3>
+<input id="textInput" type="text" placeholder="Tulis judul video...">
+<label>Ukuran tulisan</label>
+<input id="textSize" type="range" min="15" max="55" value="25">
+<button id="applyText">APPLY TEXT</button>
+</div>
+
+<div class="card">
+<h3>07 / EXPORT STUDIO</h3>
+<p class="status">Resolution: 720 × 1280</p>
+<p class="status">Frame rate: 30 FPS</p>
+<p class="status">Format: WebM</p>
+<button id="export">EXPORT VIDEO 30 DETIK</button>
+<p id="exportInfo" class="status">Menunggu proses ekspor.</p>
+</div>
+
 <script>
-const media=document.getElementById('media');
-const music=document.getElementById('music');
-const preview=document.getElementById('preview');
-const placeholder=document.getElementById('placeholder');
-const flash=document.getElementById('beatFlash');
-const canvas=document.getElementById('visualizer');
-const ctx=canvas.getContext('2d');
+const $=id=>document.getElementById(id);
 
 let files=[];
 let current=0;
@@ -155,125 +180,152 @@ let audio=null;
 let audioContext=null;
 let analyser=null;
 let source=null;
-let recordDestination=null; 
+let destination=null;
 let frequencyData=null;
 let playing=false;
+let exporting=false;
 let animation=null;
+let renderAnimation=null;
+let exportTimer=null;
 let startTime=0;
 let lastBeat=0;
 let lastSwitch=0;
-let zoomValue=8;
+let mediaURL=null;
 let renderCanvas=document.createElement('canvas');
+
 renderCanvas.width=720;
 renderCanvas.height=1280;
 
-let renderCtx=renderCanvas.getContext('2d');
-let renderStream=null;
-let renderAnimation=null;
+const renderCtx=renderCanvas.getContext('2d');
+const media=$('media');
+const preview=$('preview');
+const flash=$('beatFlash');
+const canvas=$('visualizer');
+const ctx=canvas.getContext('2d');
+
 media.onchange=()=>{
  files=Array.from(media.files);
-
- if(!files.length)return;
-
- const f=files[0];
-
- document.getElementById('mediaInfo').textContent=
- 'Nama: '+f.name+
- ' | Format: '+f.type+
- ' | Ukuran: '+f.size+' bytes';
-
  current=0;
- showMedia();
-};
- document.getElementById('mediaInfo').textContent=
+
+ $('mediaInfo').textContent=
  files.length+' media dipilih';
- current=0;
+
  showMedia();
+ drawTimeline();
 };
 
 function showMedia(){
- preview.querySelectorAll('img,video').forEach(e=>e.remove());
+ preview.querySelectorAll('img,video').forEach(el=>{
+  if(el.tagName==='VIDEO')el.pause();
+  el.remove();
+ });
 
- if(!files.length)return;
+ if(mediaURL){
+  URL.revokeObjectURL(mediaURL);
+  mediaURL=null;
+ }
 
- placeholder.style.display='none';
+ if(!files.length){
+  $('placeholder').style.display='block';
+  return;
+ }
 
- const file=files[current%files.length];
- const url=URL.createObjectURL(file);
+ $('placeholder').style.display='none';
+
+ const file=files[current];
+ mediaURL=URL.createObjectURL(file);
+
+ let el;
 
  if(file.type.startsWith('video/')){
-  const v=document.createElement('video');
-  v.src=url;
-  v.muted=true;
-  v.loop=true;
-  v.playsInline=true;
-  v.onloadeddata=()=>{
-   if(playing)v.play().catch(()=>{});
+  el=document.createElement('video');
+  el.src=mediaURL;
+  el.muted=true;
+  el.loop=true;
+  el.playsInline=true;
+  el.onloadeddata=()=>{
+   if(playing)el.play().catch(()=>{});
   };
-  v.onerror=()=>alert('Video gagal dibaca');
-  preview.prepend(v);
  }else{
-  const img=document.createElement('img');
+  el=document.createElement('img');
+  el.src=mediaURL;
+ }
 
-  const reader=new FileReader();
-
-  reader.onload=e=>{
-   img.src=e.target.result;
-   img.onload=()=>{
-    preview.prepend(img);
-   };
-   img.onerror=()=>{
-    alert('Format foto tidak dapat ditampilkan');
-   };
-  };
-
-  reader.onerror=()=>{
-   alert('Gagal membaca file dari Galeri');
-  };
-
-  reader.readAsDataURL(file);
-}
+ preview.insertBefore(el,flash);
 }
 
-music.onchange=()=>{
+function drawTimeline(){
+ $('timeline').innerHTML='';
+
+ files.forEach((file,index)=>{
+  const item=document.createElement('div');
+  item.className='thumb'+(index===current?' active':'');
+
+  if(file.type.startsWith('image/')){
+   const img=document.createElement('img');
+   img.src=URL.createObjectURL(file);
+   item.appendChild(img);
+  }else{
+   item.textContent='VIDEO '+(index+1);
+  }
+
+  item.onclick=()=>{
+   current=index;
+   showMedia();
+   drawTimeline();
+  };
+
+  $('timeline').appendChild(item);
+ });
+}
+
+$('music').onchange=()=>{
  if(!music.files.length)return;
 
  if(audio){
   audio.pause();
-  audio.src='';
+  audio.removeAttribute('src');
  }
 
  audio=new Audio(URL.createObjectURL(music.files[0]));
+ audio.loop=true;
 
- document.getElementById('musicInfo').textContent=
- music.files[0].name;
+ $('musicInfo').textContent=music.files[0].name;
+
+ if(audioContext){
+  connectAudio();
+ }
 };
 
-async function setupAudio(){
- if(!audio)return false;
+async function connectAudio(){
+ if(!audio)return;
 
  if(!audioContext){
-  audioContext=new AudioContext();
+  const AC=window.AudioContext||window.webkitAudioContext;
+  if(!AC)throw Error('AudioContext tidak didukung browser');
+
+  audioContext=new AC();
   analyser=audioContext.createAnalyser();
   analyser.fftSize=256;
 
   source=audioContext.createMediaElementSource(audio);
+  destination=audioContext.createMediaStreamDestination();
 
-source.connect(analyser);
-
-analyser.connect(audioContext.destination);
-
-recordDestination =
-audioContext.createMediaStreamDestination();
-
-analyser.connect(recordDestination);
+  source.connect(analyser);
+  analyser.connect(audioContext.destination);
+  analyser.connect(destination);
 
   frequencyData=new Uint8Array(analyser.frequencyBinCount);
  }
 
- await audioContext.resume();
- return true;
+ if(audioContext.state==='suspended'){
+  await audioContext.resume();
+ }
 }
+
+$('volume').oninput=e=>{
+ if(audio)audio.volume=Number(e.target.value)/100;
+};
 
 function drawVisualizer(){
  if(!analyser)return;
@@ -281,72 +333,22 @@ function drawVisualizer(){
  analyser.getByteFrequencyData(frequencyData);
 
  canvas.width=canvas.clientWidth*2;
- canvas.height=canvas.clientHeight*2;
+ canvas.height=150;
 
- const w=canvas.width/frequencyData.length;
+ ctx.clearRect(0,0,canvas.width,canvas.height);
+
+ const width=canvas.width/frequencyData.length;
 
  for(let i=0;i<frequencyData.length;i++){
   const h=frequencyData[i]/255*canvas.height;
 
-  const gradient=ctx.createLinearGradient(
-   0,canvas.height,0,0
-  );
-
+  const gradient=ctx.createLinearGradient(0,canvas.height,0,0);
   gradient.addColorStop(0,'#2563eb');
   gradient.addColorStop(1,'#d946ef');
 
   ctx.fillStyle=gradient;
-  ctx.fillRect(i*w,canvas.height-h,w*0.65,h);
+  ctx.fillRect(i*width,canvas.height-h,width*.7,h);
  }
-}
-
-function drawRenderFrame(){
-
- const w=renderCanvas.width;
- const h=renderCanvas.height;
-
- renderCtx.fillStyle='#050510';
- renderCtx.fillRect(0,0,w,h);
-
- const mediaElement=preview.querySelector('img,video');
-
- if(mediaElement){
-
-  const iw=mediaElement.videoWidth || mediaElement.naturalWidth;
-  const ih=mediaElement.videoHeight || mediaElement.naturalHeight;
-
-  if(iw && ih){
-
-   const scale=Math.min(w/iw,h/ih);
-   const zoom=Number(
-    preview.style.transform.match(/scale\(([\d.]+)\)/)?.[1] || 1
-   );
-
-   const dw=iw*scale*zoom;
-   const dh=ih*scale*zoom;
-
-   renderCtx.save();
-   renderCtx.translate(w/2,h/2);
-   renderCtx.drawImage(
-    mediaElement,
-    -dw/2,
-    -dh/2,
-    dw,
-    dh
-   );
-   renderCtx.restore();
-  }
- }
-
- const flashOpacity=parseFloat(flash.style.opacity)||0;
-
- if(flashOpacity>0){
-  renderCtx.fillStyle=
-   'rgba(255,255,255,'+flashOpacity+')';
-  renderCtx.fillRect(0,0,w,h);
- }
-
- renderAnimation=requestAnimationFrame(drawRenderFrame);
 }
 
 function detectBeat(){
@@ -355,19 +357,12 @@ function detectBeat(){
  analyser.getByteFrequencyData(frequencyData);
 
  let bass=0;
- const count=12;
+ for(let i=0;i<12;i++)bass+=frequencyData[i];
 
- for(let i=0;i<count;i++){
-  bass+=frequencyData[i];
- }
+ bass/=12;
 
- bass/=count;
-
- const sensitivity=
- Number(document.getElementById('sensitivity').value);
-
+ const sensitivity=Number($('sensitivity').value);
  const threshold=155-sensitivity*9;
-
  const now=performance.now();
 
  if(bass>threshold && now-lastBeat>220){
@@ -378,41 +373,50 @@ function detectBeat(){
  return false;
 }
 
+function applyBeat(){
+ const zoom=Number($('zoom').value);
+ const intensity=Number($('flash').value)/10;
+ const effect=$('effect').value;
+
+ if(effect==='zoom'){
+  preview.style.transform='scale('+(1+zoom/100)+')';
+ }else if(effect==='shake'){
+  preview.style.transform='translateX(7px)';
+ }else if(effect==='fade'){
+  preview.style.opacity='.4';
+ }
+
+ if(effect==='flash'||effect==='zoom'||effect==='shake'){
+  flash.style.opacity=intensity;
+ }
+
+ setTimeout(()=>{
+  preview.style.transform='none';
+  preview.style.opacity='1';
+  flash.style.opacity='0';
+ },110);
+}
+
 function animate(){
  if(!playing)return;
 
- const elapsed=(performance.now()-startTime)/1000;
-
- if(elapsed>=30){
+ if(performance.now()-startTime>=30000){
   stop();
-  document.getElementById('exportInfo').textContent=
-  'Preview 30 detik selesai.';
+  $('playInfo').textContent='Preview selesai.';
   return;
  }
 
  drawVisualizer();
 
- const beat=detectBeat();
+ if(detectBeat())applyBeat();
 
- if(beat){
-  const intensity=
-  Number(document.getElementById('flash').value)/10;
+ const interval=11000-Number($('speed').value)*950;
 
-  flash.style.opacity=intensity;
-
-  preview.style.transform=
-  'scale('+(1+zoomValue/100)+')';
-
-  setTimeout(()=>{
-   flash.style.opacity=0;
-   preview.style.transform='scale(1)';
-  },110);
- }
-
- if(performance.now()-lastSwitch>3500){
+ if(performance.now()-lastSwitch>interval){
   if(files.length){
    current=(current+1)%files.length;
    showMedia();
+   drawTimeline();
   }
   lastSwitch=performance.now();
  }
@@ -422,33 +426,38 @@ function animate(){
 
 async function play(){
  if(!files.length){
-  alert('Pilih foto atau video dahulu!');
-  return;
- }
-
- if(!music){
-  alert('Pilih musik dahulu!');
+  alert('Pilih foto/video dahulu!');
   return;
  }
 
  if(!audio){
-  alert('Pilih file musik MP3 dahulu!');
+  alert('Pilih musik dahulu!');
   return;
  }
 
  stop();
 
- await setupAudio();
+ try{
+  await connectAudio();
 
- playing=true;
- startTime=performance.now();
- lastBeat=0;
- lastSwitch=performance.now();
+  playing=true;
+  startTime=performance.now();
+  lastBeat=0;
+  lastSwitch=performance.now();
 
- audio.currentTime=0;
- await audio.play();
+  audio.currentTime=0;
+  await audio.play();
 
- animate();
+  const v=preview.querySelector('video');
+  if(v)v.play().catch(()=>{});
+
+  $('playInfo').textContent='JJ Preview berjalan...';
+
+  animate();
+ }catch(error){
+  playing=false;
+  $('playInfo').textContent='Error: '+error.message;
+ }
 }
 
 function stop(){
@@ -458,48 +467,103 @@ function stop(){
 
  if(audio)audio.pause();
 
- flash.style.opacity=0;
- preview.style.transform='scale(1)';
+ preview.style.transform='none';
+ preview.style.opacity='1';
+ flash.style.opacity='0';
 
  preview.querySelectorAll('video').forEach(v=>v.pause());
 }
 
-document.getElementById('play').onclick=play;
-document.getElementById('stop').onclick=stop;
+$('play').onclick=play;
+$('stop').onclick=stop;
 
-document.getElementById('zoom').oninput=e=>{
- zoomValue=Number(e.target.value);
+$('applyText').onclick=()=>{
+ $('caption').textContent=$('textInput').value;
+ $('caption').style.fontSize=$('textSize').value+'px';
 };
 
+function drawRenderFrame(){
+ const w=720,h=1280;
 
- 
-document.getElementById('export').onclick=async()=>{
+ renderCtx.fillStyle='#050510';
+ renderCtx.fillRect(0,0,w,h);
 
- const info=document.getElementById('exportInfo');
+ const el=preview.querySelector('img,video');
 
- if(!files.length || !audio){
-  alert('Pilih foto/video dan musik dahulu!');
+ if(el){
+  const iw=el.videoWidth||el.naturalWidth;
+  const ih=el.videoHeight||el.naturalHeight;
+
+  if(iw&&ih){
+   const scale=Math.min(w/iw,h/ih);
+   const zoom=preview.style.transform.includes('scale')
+    ?1+Number($('zoom').value)/100:1;
+
+   const dw=iw*scale*zoom;
+   const dh=ih*scale*zoom;
+
+   renderCtx.drawImage(el,(w-dw)/2,(h-dh)/2,dw,dh);
+  }
+ }
+
+ const opacity=Number(flash.style.opacity)||0;
+
+ if(opacity>0){
+  renderCtx.fillStyle='rgba(255,255,255,'+opacity+')';
+  renderCtx.fillRect(0,0,w,h);
+ }
+
+ const caption=$('caption').textContent;
+
+ if(caption){
+  renderCtx.fillStyle='white';
+  renderCtx.font='bold '+Number($('textSize').value)*2+'px Arial';
+  renderCtx.textAlign='center';
+  renderCtx.shadowColor='black';
+  renderCtx.shadowBlur=10;
+  renderCtx.fillText(caption,w/2,h*.82,w-50);
+  renderCtx.shadowBlur=0;
+ }
+
+ if(exporting){
+  renderAnimation=requestAnimationFrame(drawRenderFrame);
+ }
+}
+
+async function exportVideo(){
+ if(!files.length||!audio){
+  alert('Pilih media dan musik dahulu!');
   return;
  }
 
+ if(!window.MediaRecorder||!renderCanvas.captureStream){
+  alert('Browser belum mendukung perekaman video.');
+  return;
+ }
+
+ if(exporting)return;
+
+ const button=$('export');
+ button.disabled=true;
+
  try{
+  await connectAudio();
+  stop();
 
-  await setupAudio();
+  current=0;
+  showMedia();
 
-  if(renderAnimation){
-   cancelAnimationFrame(renderAnimation);
-  }
+  await new Promise(resolve=>setTimeout(resolve,300));
 
+  exporting=true;
   drawRenderFrame();
 
-  renderStream=renderCanvas.captureStream(30);
+  const videoStream=renderCanvas.captureStream(30);
 
-  const tracks=[
-   ...renderStream.getVideoTracks(),
-   ...recordDestination.stream.getAudioTracks()
-  ];
-
-  const combined=new MediaStream(tracks);
+  const combined=new MediaStream([
+   ...videoStream.getVideoTracks(),
+   ...destination.stream.getAudioTracks()
+  ]);
 
   let mime='video/webm;codecs=vp8,opus';
 
@@ -507,52 +571,69 @@ document.getElementById('export').onclick=async()=>{
    mime='video/webm';
   }
 
-  const recorder=new MediaRecorder(combined,{
-   mimeType:mime
-  });
-
+  const recorder=new MediaRecorder(combined,{mimeType:mime});
   const chunks=[];
 
   recorder.ondataavailable=e=>{
    if(e.data.size>0)chunks.push(e.data);
   };
 
+  recorder.onerror=e=>{
+   $('exportInfo').textContent='Error: '+e.error.message;
+  };
+
   recorder.onstop=()=>{
+   exporting=false;
+   cancelAnimationFrame(renderAnimation);
+
    const blob=new Blob(chunks,{type:mime});
    const url=URL.createObjectURL(blob);
 
    const link=document.createElement('a');
    link.href=url;
-   link.download='DERiiLNAY-JJ.webm';
+   link.download='DERiiLNAY-JJ-PRO.webm';
+   document.body.appendChild(link);
    link.click();
+   link.remove();
 
-   info.textContent='Video berhasil direkam!';
+   $('exportInfo').textContent=
+    'Ekspor selesai! Ukuran: '+Math.round(blob.size/1024)+' KB';
 
-   tracks.forEach(t=>t.stop());
+   videoStream.getTracks().forEach(t=>t.stop());
+   destination.stream.getTracks().forEach(t=>t.stop());
+   combined.getTracks().forEach(t=>t.stop());
+
+   button.disabled=false;
   };
 
-  recorder.start();
+  recorder.start(1000);
 
-  await play();
+  audio.currentTime=0;
+  await audio.play();
 
-  info.textContent='Merekam video JJ 30 detik...';
+  $('exportInfo').textContent='Sedang merekam video 30 detik...';
 
-  setTimeout(()=>{
-   stop();
-   if(recorder.state==='recording'){
-    recorder.stop();
-   }
+  exportTimer=setTimeout(()=>{
+   if(recorder.state==='recording')recorder.stop();
+   audio.pause();
+   exporting=false;
    cancelAnimationFrame(renderAnimation);
   },30000);
 
  }catch(error){
-  info.textContent='Error: '+error.message;
+  exporting=false;
+  cancelAnimationFrame(renderAnimation);
+  button.disabled=false;
+  $('exportInfo').textContent='Error: '+error.message;
  }
+}
 
-};
+$('export').onclick=exportVideo;
 
-
-
+window.addEventListener('beforeunload',()=>{
+ stop();
+ if(mediaURL)URL.revokeObjectURL(mediaURL);
+});
 </script>
 </body>
 </html>
