@@ -660,6 +660,13 @@ async function exportVideo(){
   audio.currentTime=0;
   await audio.play();
 
+playing=true;
+startTime=performance.now();
+lastBeat=0;
+lastSwitch=performance.now();
+
+animate();
+
   $('exportInfo').textContent='Sedang merekam video 30 detik...';
 
   exportTimer=setTimeout(()=>{
