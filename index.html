@@ -539,6 +539,7 @@ $('applyText').onclick=()=>{
  $('caption').style.fontSize=$('textSize').value+'px';
 };
 
+
 function drawRenderFrame(){
  const w=720,h=1280;
 
@@ -553,20 +554,46 @@ function drawRenderFrame(){
 
   if(iw&&ih){
    const scale=Math.min(w/iw,h/ih);
-   const zoom=preview.style.transform.includes('scale')
-    ?1+Number($('zoom').value)/100:1;
+   const now=performance.now();
+   const active=now<jjEffectUntil;
+   const effect=active?jjEffectType:'';
+
+   let zoom=1;
+   let shakeX=0;
+   let opacity=1;
+
+   if(effect==='zoom'){
+    zoom=1+Number($('zoom').value)/100;
+   }
+
+   if(effect==='shake'){
+    shakeX=(Math.random()-.5)*24;
+   }
+
+   if(effect==='fade'){
+    opacity=.4;
+   }
 
    const dw=iw*scale*zoom;
    const dh=ih*scale*zoom;
 
-   renderCtx.drawImage(el,(w-dw)/2,(h-dh)/2,dw,dh);
+   renderCtx.save();
+   renderCtx.globalAlpha=opacity;
+   renderCtx.drawImage(
+    el,
+    (w-dw)/2+shakeX,
+    (h-dh)/2,
+    dw,
+    dh
+   );
+   renderCtx.restore();
   }
  }
 
- const opacity=Number(flash.style.opacity)||0;
+ const flashOpacity=Number(flash.style.opacity)||0;
 
- if(opacity>0){
-  renderCtx.fillStyle='rgba(255,255,255,'+opacity+')';
+ if(flashOpacity>0){
+  renderCtx.fillStyle='rgba(255,255,255,'+flashOpacity+')';
   renderCtx.fillRect(0,0,w,h);
  }
 
@@ -586,6 +613,9 @@ function drawRenderFrame(){
   renderAnimation=requestAnimationFrame(drawRenderFrame);
  }
 }
+
+   
+  
 
 async function exportVideo(){
  if(!files.length||!audio){
