@@ -422,10 +422,17 @@ function detectBeat(){
  return false;
 }
 
+
+let jjEffectType = '';
+let jjEffectUntil = 0;
+
 function applyBeat(){
  const zoom=Number($('zoom').value);
  const intensity=Number($('flash').value)/10;
  const effect=$('effect').value;
+
+ jjEffectType=effect;
+ jjEffectUntil=performance.now()+180;
 
  if(effect==='zoom'){
   preview.style.transform='scale('+(1+zoom/100)+')';
@@ -443,8 +450,9 @@ function applyBeat(){
   preview.style.transform='none';
   preview.style.opacity='1';
   flash.style.opacity='0';
- },110);
+ },180);
 }
+
 
 function animate(){
  if(!playing)return;
