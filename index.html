@@ -156,6 +156,37 @@ input[type=text],select{
 
 <div class="card">
 <h3>06 / TEXT STUDIO</h3>
+ 
+<!-- COLOR FILTER STUDIO -->
+<div class="card">
+<h3>COLOR FILTER STUDIO</h3>
+
+<p>Pilih filter warna untuk foto dan video JJ kamu.</p>
+
+<label>COLOR PRESET</label>
+<select id="colorFilter">
+ <option value="normal">NORMAL</option>
+ <option value="cinematic">CINEMATIC</option>
+ <option value="vintage">VINTAGE</option>
+ <option value="neon">NEON CYBER</option>
+ <option value="bw">BLACK & WHITE</option>
+</select>
+
+<p id="filterInfo">Filter aktif: NORMAL</p>
+
+<label>Brightness</label>
+<input id="brightness" type="range" min="50" max="150" value="100">
+
+<label>Contrast</label>
+<input id="contrast" type="range" min="50" max="200" value="100">
+
+<label>Saturation</label>
+<input id="saturation" type="range" min="0" max="200" value="100">
+
+<button id="resetFilter">RESET COLOR FILTER</button>
+</div>
+<!-- END COLOR FILTER STUDIO -->
+
 <input id="textInput" type="text" placeholder="Tulis judul video...">
 <label>Ukuran tulisan</label>
 <input id="textSize" type="range" min="15" max="55" value="25">
