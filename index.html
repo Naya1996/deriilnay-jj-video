@@ -687,8 +687,6 @@ async function exportVideo(){
     'Ekspor selesai! Ukuran: '+Math.round(blob.size/1024)+' KB';
 
    videoStream.getTracks().forEach(t=>t.stop());
-   destination.stream.getTracks().forEach(t=>t.stop());
-   combined.getTracks().forEach(t=>t.stop());
 
    button.disabled=false;
   };
