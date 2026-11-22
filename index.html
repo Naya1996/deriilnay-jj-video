@@ -570,6 +570,47 @@ $('applyText').onclick=()=>{
  $('caption').style.fontSize=$('textSize').value+'px';
 };
 
+function getColorFilter(){
+ const presets={
+  normal:{b:1,c:1,s:1,g:0,sep:0,h:0},
+  cinematic:{b:1.05,c:1.2,s:.85,g:0,sep:.08,h:0},
+  vintage:{b:1.08,c:.9,s:.75,g:0,sep:.35,h:0},
+  neon:{b:1.1,c:1.25,s:1.6,g:0,sep:0,h:-8},
+  bw:{b:1,c:1.15,s:1,g:1,sep:0,h:0}
+ };
+
+ const p=presets[$('colorFilter').value]||presets.normal;
+
+ const b=p.b*Number($('brightness').value)/100;
+ const c=p.c*Number($('contrast').value)/100;
+ const s=p.s*Number($('saturation').value)/100;
+
+ return `brightness(${b}) contrast(${c}) saturate(${s}) grayscale(${p.g}) sepia(${p.sep}) hue-rotate(${p.h}deg)`;
+}
+
+function applyColorFilter(){
+ const el=preview.querySelector('img,video');
+
+ if(el){
+  el.style.filter=getColorFilter();
+ }
+
+ $('filterInfo').textContent='Filter aktif: '+$('colorFilter').selectedOptions[0].text;
+}
+
+$('colorFilter').onchange=applyColorFilter;
+$('brightness').oninput=applyColorFilter;
+$('contrast').oninput=applyColorFilter;
+$('saturation').oninput=applyColorFilter;
+
+$('resetFilter').onclick=()=>{
+ $('colorFilter').value='normal';
+ $('brightness').value=100;
+ $('contrast').value=100;
+ $('saturation').value=100;
+ applyColorFilter();
+};
+
 
 function drawRenderFrame(){
  const w=720,h=1280;
