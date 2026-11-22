@@ -205,24 +205,32 @@ const canvas=$('visualizer');
 const ctx=canvas.getContext('2d');
 
 media.onchange=()=>{
+ // Hentikan media lama
+ stop();
+
+ // Hapus URL media sebelumnya
+ mediaURLs.forEach(url=>{
+  URL.revokeObjectURL(url);
+ });
+
  files=Array.from(media.files);
  current=0;
 
+ // Buat URL permanen selama sesi editing
+ mediaURLs=files.map(file=>
+  URL.createObjectURL(file)
+ );
+
  $('mediaInfo').textContent=
- files.length+' media dipilih';
+  files.length+' media dipilih';
 
  showMedia();
  drawTimeline();
 };
 
-
-
 function showMedia(){
 
- const oldElements =
- preview.querySelectorAll('img,video');
-
- oldElements.forEach(el=>{
+ preview.querySelectorAll('img,video').forEach(el=>{
   if(el.tagName==='VIDEO'){
    el.pause();
    el.removeAttribute('src');
@@ -231,17 +239,13 @@ function showMedia(){
   el.remove();
  });
 
- if(mediaURL){
-  URL.revokeObjectURL(mediaURL);
-  mediaURL=null;
- }
-
  if(!files.length){
   $('placeholder').style.display='block';
   return;
  }
 
  const file=files[current];
+ const url=mediaURLs[current];
 
  $('placeholder').style.display='none';
 
@@ -250,7 +254,8 @@ function showMedia(){
   const img=document.createElement('img');
 
   img.onload=()=>{
-   preview.insertBefore(img,flash);
+   $('playInfo').textContent=
+    'Foto '+(current+1)+' berhasil dimuat';
   };
 
   img.onerror=()=>{
@@ -259,30 +264,18 @@ function showMedia(){
    $('placeholder').style.display='block';
   };
 
-  const reader=new FileReader();
-
-  reader.onload=e=>{
-   img.src=e.target.result;
-  };
-
-  reader.onerror=()=>{
-   $('placeholder').textContent=
-    'FILE FOTO TIDAK DAPAT DIBACA';
-   $('placeholder').style.display='block';
-  };
-
-  reader.readAsDataURL(file);
+  img.src=url;
+  preview.insertBefore(img,flash);
 
  }else if(file.type.startsWith('video/')){
 
-  mediaURL=URL.createObjectURL(file);
-
   const video=document.createElement('video');
 
-  video.src=mediaURL;
+  video.src=url;
   video.muted=true;
   video.loop=true;
   video.playsInline=true;
+  video.preload='auto';
 
   video.onloadeddata=()=>{
    preview.insertBefore(video,flash);
@@ -298,33 +291,27 @@ function showMedia(){
 }
 
 function drawTimeline(){
- const timeline=$('timeline');
 
- // Bersihkan thumbnail lama
+ const timeline=$('timeline');
  timeline.innerHTML='';
 
  files.forEach((file,index)=>{
+
   const item=document.createElement('div');
 
   item.className='thumb'+
    (index===current?' active':'');
 
   if(file.type.startsWith('image/')){
+
    const img=document.createElement('img');
 
-   const url=URL.createObjectURL(file);
-
-   img.onload=()=>{
-    URL.revokeObjectURL(url);
-   };
+   img.src=mediaURLs[index];
+   item.appendChild(img);
 
    img.onerror=()=>{
-    URL.revokeObjectURL(url);
     item.textContent='FOTO ERROR';
    };
-
-   img.src=url;
-   item.appendChild(img);
 
   }else{
    item.textContent='VIDEO '+(index+1);
@@ -340,7 +327,7 @@ function drawTimeline(){
  });
 }
 
-
+  
 $('music').onchange=()=>{
  if(!music.files.length)return;
 
