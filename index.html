@@ -678,10 +678,16 @@ async function exportVideo(){
 }
 
 $('export').onclick=exportVideo;
-
 window.addEventListener('beforeunload',()=>{
  stop();
- if(mediaURL)URL.revokeObjectURL(mediaURL);
+
+ mediaURLs.forEach(url=>{
+  URL.revokeObjectURL(url);
+ });
+
+ if(mediaURL){
+  URL.revokeObjectURL(mediaURL);
+ }
 });
 </script>
 </body>
